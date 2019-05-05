@@ -1,4 +1,4 @@
-package mobile.weframe.com.weframe_gallery_app
+package mobile.weframe.com.weframe_gallery_app.gallery.detail
 
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
@@ -11,6 +11,8 @@ import com.squareup.picasso.Callback
 import com.squareup.picasso.MemoryPolicy
 import com.squareup.picasso.NetworkPolicy
 import com.squareup.picasso.Picasso
+import mobile.weframe.com.weframe_gallery_app.R
+import mobile.weframe.com.weframe_gallery_app.gallery.UserPicture
 
 class UserPictureActivity : AppCompatActivity() {
 
@@ -34,11 +36,11 @@ class UserPictureActivity : AppCompatActivity() {
 
         Picasso.get()
             .load(userPicture.url)
-//            .placeholder(R.drawable.placeholder)
-//            .error(R.drawable.error)
+            .placeholder(R.drawable.loading_animation)
+            .error(R.drawable.error)
             .fit()
-            .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
-            .networkPolicy(NetworkPolicy.NO_CACHE)
+//            .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
+//            .networkPolicy(NetworkPolicy.NO_CACHE)
             .into(imageView, object : Callback {
 
                 override fun onSuccess() {

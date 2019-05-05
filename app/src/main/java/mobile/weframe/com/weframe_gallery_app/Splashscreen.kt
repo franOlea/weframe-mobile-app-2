@@ -7,7 +7,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.view.View
 import kotlinx.android.synthetic.main.activity_splashscreen.*
-import java.time.Instant
+import mobile.weframe.com.weframe_gallery_app.gallery.UserPictureGalleryActivity
 import java.util.*
 
 /**

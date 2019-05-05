@@ -1,4 +1,4 @@
-package mobile.weframe.com.weframe_gallery_app
+package mobile.weframe.com.weframe_gallery_app.gallery
 
 import android.os.Parcelable
 import kotlinx.android.parcel.Parcelize

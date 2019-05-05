@@ -11,6 +11,7 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme" tools:ignore="GoogleAppIndexingWarning" android:fullBackupContent="true">
+        <uses-library android:name="org.apache.http.legacy" android:required="false"/>
         <activity
                 android:name=".Splashscreen"
                 android:configChanges="orientation|keyboardHidden|screenSize"
@@ -28,15 +29,14 @@
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:name=".UserPictureActivity"
+                android:name=".gallery.detail.UserPictureActivity"
                 android:label="@string/title_activity_login"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
         <activity
-                android:name=".UserPictureGalleryActivity"
+                android:name=".gallery.UserPictureGalleryActivity"
                 android:label="@string/title_activity_login"
                 android:theme="@style/AppTheme.NoActionBar">
         </activity>
     </application>
-
 </manifest>

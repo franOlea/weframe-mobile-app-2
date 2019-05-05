@@ -1,4 +1,4 @@
-package mobile.weframe.com.weframe_gallery_app
+package mobile.weframe.com.weframe_gallery_app.gallery
 
 import android.content.Context
 import android.content.Intent
@@ -7,9 +7,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
-import com.squareup.picasso.MemoryPolicy
-import com.squareup.picasso.NetworkPolicy
 import com.squareup.picasso.Picasso
+import mobile.weframe.com.weframe_gallery_app.R
+import mobile.weframe.com.weframe_gallery_app.gallery.detail.UserPictureActivity
 
 class UserPictureGalleryAdapter(val context: Context, val userPictures: List<UserPicture>)
     : RecyclerView.Adapter<UserPictureGalleryAdapter.MyViewHolder>() {
@@ -27,11 +27,11 @@ class UserPictureGalleryAdapter(val context: Context, val userPictures: List<Use
 
         Picasso.get()
             .load(userPicture.url)
-//            .placeholder(R.drawable.placeholder)
-//            .error(R.drawable.error)
+            .placeholder(R.drawable.loading_animation)
+            .error(R.drawable.error)
             .fit()
-            .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
-            .networkPolicy(NetworkPolicy.NO_CACHE)
+//            .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
+//            .networkPolicy(NetworkPolicy.NO_CACHE)
             .into(imageView)
     }
 

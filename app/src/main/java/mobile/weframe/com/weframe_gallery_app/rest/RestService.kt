@@ -1,5 +1,8 @@
 package mobile.weframe.com.weframe_gallery_app.rest
 
+import android.content.Intent
+import android.content.res.Resources
+import mobile.weframe.com.weframe_gallery_app.R
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.*
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA
@@ -20,12 +23,12 @@ import java.util.*
 class RestService private constructor() {
 
     companion object {
-        val SERVER_URL = "http://weframers-franolea.rhcloud.com"
+        val SERVER_URL = "http://weframe.sa-east-1.elasticbeanstalk.com"
         val instance = RestService()
     }
 
     val restTemplate: RestTemplate
-    var authHeader: HttpAuthentication? = null
+    var authHeader: String? = null
 
     init {
         val formHttpMessageConverter = FormHttpMessageConverter()
@@ -38,38 +41,24 @@ class RestService private constructor() {
     }
 
     fun processLogin(authToken: String) {
-        this.authHeader =  object: HttpAuthentication() {
-            override fun getHeaderValue(): String {
-                return "Bearer $authToken"
-            }
-        }
+        this.authHeader =  "Bearer $authToken"
     }
 
     fun <T> request(url: String, method: HttpMethod, entity: HttpEntity<out Any>, responseClass: Class<T>) : ResponseEntity<T> {
         if(authHeader == null) {
-            throw IllegalStateException("The user is not logged in.")
+            throw NotLoggedInException()
         }
-        entity.headers.setAuthorization(authHeader)
+        val headers = HttpHeaders()
+        headers.putAll(entity.headers)
+        headers["Authorization"] = listOf(authHeader)
+        val requestEntity = HttpEntity(entity.body, headers)
         try {
-            return this.restTemplate.exchange("$SERVER_URL$url", method, entity, responseClass)
+            return this.restTemplate.exchange("$SERVER_URL$url", method, requestEntity, responseClass)
         } catch(e: HttpClientErrorException) {
             this.authHeader = null
-            throw IllegalStateException("The user token is invalid or expired.")
+            throw NotLoggedInException()
         }
     }
-
-//    fun <T> request(url: String, method: HttpMethod, responseClass: Class<T>) : ResponseEntity<T> {
-//        if(authHeader == null) {
-//            throw IllegalStateException("The user is not logged in.")
-//        }
-//        entity.headers.setAuthorization(authHeader)
-//        try {
-//            this.restTemplate.exchange("$SERVER_URL$url", method, entity, responseClass)
-//        } catch(e: HttpClientErrorException) {
-//            this.authHeader = null
-//            throw IllegalStateException("The user token is invalid or expired.")
-//        }
-//    }
 
 }
 
@@ -106,3 +95,4 @@ class UserPictureService {
 }
 
 class UploadFailException(message: String?) : Exception(message)
+class NotLoggedInException : Exception()

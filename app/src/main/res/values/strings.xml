@@ -16,6 +16,9 @@
 
     <string name="com_auth0_client_id">5ZAwQ5zSnLXx0ErenpBEM6lsu5Faqblp</string>
     <string name="com_auth0_domain">weframe.auth0.com</string>
+
     <string name="user_picture">User Picture</string>
     <string name="user_picture_detail">User Picture Detail</string>
+
+    <string name="api_base_url">http://weframe.sa-east-1.elasticbeanstalk.com</string>
 </resources>

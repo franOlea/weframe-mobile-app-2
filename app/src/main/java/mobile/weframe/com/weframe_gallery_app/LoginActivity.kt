@@ -13,6 +13,8 @@ import com.auth0.android.provider.AuthCallback
 import com.auth0.android.provider.WebAuthProvider
 import com.auth0.android.result.Credentials
 import kotlinx.android.synthetic.main.content_login.*
+import mobile.weframe.com.weframe_gallery_app.gallery.UserPictureGalleryActivity
+import mobile.weframe.com.weframe_gallery_app.rest.RestService
 
 class LoginActivity : AppCompatActivity() {
 
@@ -52,9 +54,13 @@ class LoginActivity : AppCompatActivity() {
             }
 
             override fun onSuccess(credentials: Credentials) {
-                sharedPref.edit().putString(getString(R.string.auth_token), credentials.accessToken)
-                sharedPref.edit().putString(getString(R.string.auth_refresh_token), credentials.refreshToken)
-                sharedPref.edit().putLong(getString(R.string.auth_token_expiration_at), credentials.expiresAt!!.time)
+                with(sharedPref.edit()) {
+                    putString(getString(R.string.auth_token), credentials.accessToken)
+                    putString(getString(R.string.auth_refresh_token), credentials.refreshToken)
+                    putLong(getString(R.string.auth_token_expiration_at), credentials.expiresAt!!.time)
+                    RestService.instance.processLogin(credentials.accessToken!!)
+                    apply()
+                }
                 startActivity(createIntent(UserPictureGalleryActivity::class.java))
             }
         }
