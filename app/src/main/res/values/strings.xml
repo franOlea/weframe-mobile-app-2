@@ -7,7 +7,9 @@
     <string name="dummy_content">DUMMY\nCONTENT</string>
     <string name="title_activity_login">LoginActivity</string>
 
-    <string name="credentials_shared_preferences">mobile.weframe.com.weframe_gallery_app.credentials_shared_preferences</string>
+    <string name="credentials_shared_preferences">
+        mobile.weframe.com.weframe_gallery_app.credentials_shared_preferences
+    </string>
     <string name="auth_token_expiration_at">auth_token_expiration_at</string>
     <string name="auth_token">auth_token</string>
     <string name="auth_refresh_token">auth_refresh_token</string>
@@ -21,4 +23,5 @@
     <string name="user_picture_detail">User Picture Detail</string>
 
     <string name="api_base_url">http://weframe.sa-east-1.elasticbeanstalk.com</string>
+    <string name="title_activity_main">MainActivity</string>
 </resources>

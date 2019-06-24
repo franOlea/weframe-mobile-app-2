@@ -1,8 +1,6 @@
 package mobile.weframe.com.weframe_gallery_app.rest
 
-import android.content.Intent
-import android.content.res.Resources
-import mobile.weframe.com.weframe_gallery_app.R
+import com.fasterxml.jackson.databind.ObjectMapper
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.*
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA
@@ -14,9 +12,6 @@ import org.springframework.util.MultiValueMap
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 import java.io.File
-import java.lang.Exception
-import java.lang.IllegalStateException
-
 import java.nio.charset.Charset
 import java.util.*
 
@@ -89,9 +84,8 @@ class UserPictureService {
         headers.add("size", size.toString())
         val entity = HttpEntity<Any>(null, headers)
         return RestService.instance
-            .request("/user-pictures", HttpMethod.GET, entity, UserPicturePagedResponse::class.java)
+            .request("/user-pictures?page=$page&size=$size", HttpMethod.GET, entity, UserPicturePagedResponse::class.java)
     }
-
 }
 
 class UploadFailException(message: String?) : Exception(message)
