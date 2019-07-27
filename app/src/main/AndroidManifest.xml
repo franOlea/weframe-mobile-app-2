@@ -14,8 +14,8 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme"
-            tools:ignore="GoogleAppIndexingWarning"
-            android:usesCleartextTraffic="true">
+            android:usesCleartextTraffic="true"
+            tools:ignore="GoogleAppIndexingWarning">
         <uses-library
                 android:name="org.apache.http.legacy"
                 android:required="false"/>
@@ -50,6 +50,8 @@
                 android:name=".MainActivity"
                 android:label="@string/title_activity_main"
                 android:theme="@style/AppTheme.NoActionBar">
+        </activity>
+        <activity android:name=".gallery.UploadActivity">
         </activity>
     </application>
 

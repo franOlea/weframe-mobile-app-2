@@ -24,4 +24,6 @@
 
     <string name="api_base_url">http://weframe.sa-east-1.elasticbeanstalk.com</string>
     <string name="title_activity_main">MainActivity</string>
+
+    <string name="upload_file_path">FilePath</string>
 </resources>

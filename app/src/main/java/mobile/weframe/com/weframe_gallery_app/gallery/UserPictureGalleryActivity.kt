@@ -17,13 +17,13 @@ import mobile.weframe.com.weframe_gallery_app.R
 import mobile.weframe.com.weframe_gallery_app.gallery.provider.PageRequest
 import mobile.weframe.com.weframe_gallery_app.gallery.provider.RestUserPictureProvider
 import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
-import java.io.File
 import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 
 class UserPictureGalleryActivity : AppCompatActivity() {
+    @Suppress("PrivatePropertyName")
     private val MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0
     private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
@@ -136,25 +136,14 @@ class UserPictureGalleryActivity : AppCompatActivity() {
                     cursor.close()
                     // Set the Image in ImageView after decoding the String
                     //imageView.setImageBitmap(BitmapFactory.decodeFile(imgDecodableString))
-                    postPicture(File(imgDecodableString))
+                    val intent = Intent(applicationContext, UploadActivity::class.java)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                    intent.putExtra(getString(R.string.upload_file_path), imgDecodableString)
+                    startActivity(intent)
                 }
             }
-    }
-
-    private fun postPicture(file: File) {
-        executorService.submit {
-            try {
-                val uploadedPicture = userPictureProvider.upload(file)
-                this.userPictures.add(uploadedPicture)
-                runOnUiThread {this.imageGalleryAdapter.notifyDataSetChanged()}
-            } catch(e : Exception) {
-                val intent = Intent(applicationContext, LoginActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-                startActivity(intent)
-            }
-        }
     }
 
     companion object {

@@ -1,6 +1,7 @@
 package mobile.weframe.com.weframe_gallery_app.gallery.provider
 
 import mobile.weframe.com.weframe_gallery_app.gallery.UserPictureProvider
+import mobile.weframe.com.weframe_gallery_app.rest.FileUploadProgressTracker
 import mobile.weframe.com.weframe_gallery_app.rest.UserPictureService
 import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
 import java.io.File
@@ -14,8 +15,8 @@ class RestUserPictureProvider : UserPictureProvider {
         return userPictureService.get(page, size).body.userPictures
     }
 
-    override fun upload(file: File) : UserPicture {
-        return userPictureService.upload(file).body
+    override fun upload(file: File, tracker: FileUploadProgressTracker) : UserPicture {
+        return userPictureService.upload(file, tracker).body
     }
 }
 

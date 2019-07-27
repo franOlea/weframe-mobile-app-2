@@ -17,41 +17,52 @@ import java.nio.charset.Charset
 import java.util.*
 
 import com.fasterxml.jackson.module.kotlin.*
+import org.springframework.http.client.SimpleClientHttpRequestFactory
 
 class RestService private constructor() {
 
     companion object {
-        val SERVER_URL = "http://kotlin-resources-server.sa-east-1.elasticbeanstalk.com"
+        const val SERVER_URL = "http://kotlin-resources-server.sa-east-1.elasticbeanstalk.com"
         val instance = RestService()
     }
 
-    val restTemplate: RestTemplate
-    var authHeader: String? = null
+    private val restTemplate: RestTemplate
+    private var authHeader: String? = null
+    private var progressTracker : ProgressTracker = ProgressTracker()
 
     init {
         val formHttpMessageConverter = FormHttpMessageConverter()
         formHttpMessageConverter.setCharset(Charset.forName("UTF8"))
+        val httpRequestFactory = SimpleClientHttpRequestFactory()
+        httpRequestFactory.setBufferRequestBody(false)
+        val progressConverter = CallbackFormHttpMessageConverter(progressTracker)
 
         this.restTemplate = RestTemplate()
-        this.restTemplate.messageConverters.add(formHttpMessageConverter)
+//        this.restTemplate.messageConverters.add(formHttpMessageConverter)
+        this.restTemplate.messageConverters.add(0, progressConverter)
         this.restTemplate.messageConverters.add(MappingJackson2HttpMessageConverter())
-        this.restTemplate.requestFactory = HttpComponentsClientHttpRequestFactory()
+        this.restTemplate.requestFactory = httpRequestFactory
     }
 
     fun processLogin(authToken: String) {
         this.authHeader =  "Bearer $authToken"
     }
 
-    fun request(url: String, method: HttpMethod, entity: HttpEntity<out Any>) : ResponseEntity<JsonNode> {
+    fun request(url: String, method: HttpMethod,
+                entity: HttpEntity<out Any>,
+                tracker: FileUploadProgressTracker = NullProgressTracker()) : ResponseEntity<JsonNode> {
         if(authHeader == null) {
             throw NotLoggedInException()
         }
+        progressTracker.progressListener = tracker
         val headers = HttpHeaders()
         headers.putAll(entity.headers)
         headers["Authorization"] = listOf(authHeader)
         val requestEntity = HttpEntity(entity.body, headers)
         try {
-            return this.restTemplate.exchange("$SERVER_URL$url", method, requestEntity, JsonNode::class.java)
+            val response = this.restTemplate.exchange("$SERVER_URL$url", method, requestEntity, JsonNode::class.java)
+            progressTracker.progressListener = null
+            return response
         } catch(e: HttpClientErrorException) {
             this.authHeader = null
             throw NotLoggedInException(e)
@@ -62,7 +73,7 @@ class RestService private constructor() {
 
 class UserPictureService {
 
-    fun upload(file: File): ResponseEntity<UserPicture> {
+    fun upload(file: File, tracker: FileUploadProgressTracker = NullProgressTracker()): ResponseEntity<UserPicture> {
         val map = LinkedMultiValueMap<String, Any>()
         map.add("file", FileSystemResource(file.absoluteFile))
         map.add("name", UUID.randomUUID().toString())
@@ -70,7 +81,7 @@ class UserPictureService {
         val headers = HttpHeaders()
         headers.contentType = MULTIPART_FORM_DATA
         val imageEntity = HttpEntity<MultiValueMap<String, Any>>(map, headers)
-        val pictureResponse = RestService.instance.request("/pictures", HttpMethod.POST, imageEntity)
+        val pictureResponse = RestService.instance.request("/pictures", HttpMethod.POST, imageEntity, tracker)
         if(pictureResponse.statusCode == HttpStatus.OK || pictureResponse.statusCode == HttpStatus.CREATED) {
             val picture = jacksonObjectMapper().convertValue<Picture>(pictureResponse.body, object : TypeReference<Picture>(){})
             val userImageEntity = HttpEntity<Picture>(picture)
@@ -78,7 +89,8 @@ class UserPictureService {
             val userPicture = jacksonObjectMapper().convertValue<UserPicture>(userPictureResponse.body, object : TypeReference<UserPicture>(){})
             return ResponseEntity(userPicture, userPictureResponse.statusCode)
         } else {
-            throw UploadFailException("An unexpected error occurred while trying to upload the user picture. Status:${pictureResponse.statusCode}")
+            throw UploadFailException("An unexpected error occurred while trying to upload the user picture. " +
+                    "Status:${pictureResponse.statusCode}")
         }
     }
 
@@ -88,13 +100,21 @@ class UserPictureService {
         headers.add("size", size.toString())
         val entity = HttpEntity<Any>(null, headers)
         val response = RestService.instance.request("/user-pictures?page=$page&size=$size", HttpMethod.GET, entity)
-        val page = jacksonObjectMapper().convertValue<Page>(response.body.get("page"), object : TypeReference<Page>() {})
+        val responsePage = jacksonObjectMapper().convertValue<Page>(response.body.get("page"), object : TypeReference<Page>() {})
         return if(response.body.has("_embedded")) {
-            val userPictures = jacksonObjectMapper().convertValue<List<UserPicture>>(response.body.get("_embedded").get("userPictures"), object : TypeReference<List<UserPicture>>() {})
-            ResponseEntity(UserPicturePagedResponse(page, userPictures), response.statusCode)
+            val userPictures = jacksonObjectMapper().convertValue<List<UserPicture>>(
+                response.body.get("_embedded").get("userPictures"), object : TypeReference<List<UserPicture>>() {})
+            ResponseEntity(UserPicturePagedResponse(responsePage, userPictures), response.statusCode)
         } else {
-            ResponseEntity(UserPicturePagedResponse(page, emptyList()), response.statusCode)
+            ResponseEntity(UserPicturePagedResponse(responsePage, emptyList()), response.statusCode)
         }
+    }
+}
+
+class NullProgressTracker: FileUploadProgressTracker {
+
+    override fun trackProgress(progress: Long) {
+
     }
 }
 
