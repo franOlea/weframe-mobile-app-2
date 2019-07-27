@@ -8,6 +8,7 @@ import android.os.Handler
 import android.view.View
 import kotlinx.android.synthetic.main.activity_splashscreen.*
 import mobile.weframe.com.weframe_gallery_app.gallery.UserPictureGalleryActivity
+import mobile.weframe.com.weframe_gallery_app.rest.RestService
 import java.util.*
 
 /**
@@ -68,7 +69,9 @@ class Splashscreen : AppCompatActivity() {
         val sharedPref = this.getSharedPreferences(
             getString(R.string.credentials_shared_preferences), Context.MODE_PRIVATE)
         val tokenExpirationTimestamp = sharedPref.getLong(getString(R.string.auth_token_expiration_at), 0L)
-        if(tokenExpirationTimestamp > Date().time) {
+        val authToken = sharedPref.getString(getString(R.string.auth_token), null)
+        if(tokenExpirationTimestamp > Date().time && authToken != null) {
+            RestService.instance.processLogin(authToken)
             val intent = createIntent(UserPictureGalleryActivity::class.java)
             startActivity(intent)
         } else {

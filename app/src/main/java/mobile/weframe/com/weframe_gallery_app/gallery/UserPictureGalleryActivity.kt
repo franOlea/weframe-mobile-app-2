@@ -1,30 +1,30 @@
 package mobile.weframe.com.weframe_gallery_app.gallery
 
+import android.Manifest
+import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.provider.MediaStore
+import android.support.design.widget.FloatingActionButton
+import android.support.v4.app.ActivityCompat
+import android.support.v4.content.ContextCompat
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import mobile.weframe.com.weframe_gallery_app.LoginActivity
 import mobile.weframe.com.weframe_gallery_app.R
-import mobile.weframe.com.weframe_gallery_app.rest.NotLoggedInException
-import android.app.Activity
-import android.support.design.widget.FloatingActionButton
-import android.view.View
-import mobile.weframe.com.weframe_gallery_app.gallery.provider.InMemoryUserPictureProvider
-import android.graphics.BitmapFactory
-import android.provider.MediaStore
-import mobile.weframe.com.weframe_gallery_app.gallery.provider.DownloadFilesTask
 import mobile.weframe.com.weframe_gallery_app.gallery.provider.PageRequest
 import mobile.weframe.com.weframe_gallery_app.gallery.provider.RestUserPictureProvider
+import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
+import java.io.File
 import java.util.*
-import java.util.concurrent.ExecutionException
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
 
 
 class UserPictureGalleryActivity : AppCompatActivity() {
+    private val MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0
     private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
 
     private lateinit var recyclerView: RecyclerView
@@ -71,15 +71,50 @@ class UserPictureGalleryActivity : AppCompatActivity() {
     }
 
     private fun pickFromGallery() {
-        //Create an Intent with action as ACTION_PICK
-        val intent = Intent(Intent.ACTION_PICK)
-        // Sets the type as image/*. This ensures only components of type image are selected
-        intent.type = "image/*"
-        //We pass an extra array with the accepted mime types. This will ensure only components with these MIME types as targeted.
-        val mimeTypes = arrayOf("image/jpeg", "image/png")
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
-        // Launching the Intent
-        startActivityForResult(intent, GALLERY_REQUEST_CODE)
+        if (ContextCompat.checkSelfPermission(this,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED) {
+
+            // Permission is not granted
+            // Should we show an explanation?
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this,
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                println("Show explaination")
+                // Show an explanation to the user *asynchronously* -- don't block
+                // this thread waiting for the user's response! After the user
+                // sees the explanation, try again to request the permission.
+            } else {
+                // No explanation needed, we can request the permission.
+                ActivityCompat.requestPermissions(this,
+                    arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE),
+                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE)
+
+                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+                // app-defined int constant. The callback method gets the
+                // result of the request.
+
+                //Create an Intent with action as ACTION_PICK
+                val intent = Intent(Intent.ACTION_PICK)
+                // Sets the type as image/*. This ensures only components of type image are selected
+                intent.type = "image/*"
+                //We pass an extra array with the accepted mime types. This will ensure only components with these MIME types as targeted.
+                val mimeTypes = arrayOf("image/jpeg", "image/png")
+                intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+                // Launching the Intent
+                startActivityForResult(intent, GALLERY_REQUEST_CODE)
+            }
+        } else {
+            // Permission has already been granted
+            //Create an Intent with action as ACTION_PICK
+            val intent = Intent(Intent.ACTION_PICK)
+            // Sets the type as image/*. This ensures only components of type image are selected
+            intent.type = "image/*"
+            //We pass an extra array with the accepted mime types. This will ensure only components with these MIME types as targeted.
+            val mimeTypes = arrayOf("image/jpeg", "image/png")
+            intent.putExtra(Intent.EXTRA_MIME_TYPES, mimeTypes)
+            // Launching the Intent
+            startActivityForResult(intent, GALLERY_REQUEST_CODE)
+        }
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -101,9 +136,25 @@ class UserPictureGalleryActivity : AppCompatActivity() {
                     cursor.close()
                     // Set the Image in ImageView after decoding the String
                     //imageView.setImageBitmap(BitmapFactory.decodeFile(imgDecodableString))
-                    println(data)
+                    postPicture(File(imgDecodableString))
                 }
             }
+    }
+
+    private fun postPicture(file: File) {
+        executorService.submit {
+            try {
+                val uploadedPicture = userPictureProvider.upload(file)
+                this.userPictures.add(uploadedPicture)
+                runOnUiThread {this.imageGalleryAdapter.notifyDataSetChanged()}
+            } catch(e : Exception) {
+                val intent = Intent(applicationContext, LoginActivity::class.java)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+                startActivity(intent)
+            }
+        }
     }
 
     companion object {

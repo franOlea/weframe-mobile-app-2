@@ -1,12 +1,16 @@
 package mobile.weframe.com.weframe_gallery_app.rest
 
-import com.fasterxml.jackson.annotation.JsonProperty
-import mobile.weframe.com.weframe_gallery_app.gallery.UserPicture
+import android.os.Parcelable
+import kotlinx.android.parcel.Parcelize
 
-class UserPicturePagedResponse(val page: Page, @JsonProperty("_embedded.userPictures") val userPictures: List<UserPicture>)
+@Parcelize
+class UserPicturePagedResponse(val page: Page, val userPictures: List<UserPicture>) : Parcelable
 
-class Page(val pageNumber: Long, val totalPages: Long, val size: Long, val totalElements: Long)
+@Parcelize
+class Page(val number: Long, val totalPages: Long, val size: Long, val totalElements: Long) : Parcelable
 
-class UserPicture(val id: Long, val picture: Picture, val user: String)
+@Parcelize
+class UserPicture(val id: Long, val picture: Picture, val user: String) : Parcelable
 
-class Picture(val id: Long, val name: String, val key: String, val url: String)
+@Parcelize
+class Picture(val id: Long, val name: String, val key: String, val url: String?) : Parcelable

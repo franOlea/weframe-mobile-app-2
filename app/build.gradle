@@ -38,6 +38,7 @@ android {
 dependencies {
     implementation 'com.android.support:recyclerview-v7:28.0.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.6.5'
+    implementation 'com.fasterxml.jackson.module:jackson-module-kotlin:2.9.9'
     implementation 'org.springframework.android:spring-android-rest-template:1.0.1.RELEASE'
     implementation 'com.squareup.picasso:picasso:2.71828'
     implementation 'com.auth0.android:auth0:1.15.2'

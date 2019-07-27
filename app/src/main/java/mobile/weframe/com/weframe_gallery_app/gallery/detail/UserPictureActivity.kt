@@ -8,11 +8,9 @@ import android.support.v7.graphics.Palette
 import android.view.ViewGroup
 import android.widget.ImageView
 import com.squareup.picasso.Callback
-import com.squareup.picasso.MemoryPolicy
-import com.squareup.picasso.NetworkPolicy
 import com.squareup.picasso.Picasso
 import mobile.weframe.com.weframe_gallery_app.R
-import mobile.weframe.com.weframe_gallery_app.gallery.UserPicture
+import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
 
 class UserPictureActivity : AppCompatActivity() {
 
@@ -35,7 +33,7 @@ class UserPictureActivity : AppCompatActivity() {
         super.onStart()
 
         Picasso.get()
-            .load(userPicture.url)
+            .load(userPicture.picture.url)
             .placeholder(R.drawable.loading_animation)
             .error(R.drawable.error)
             .fit()

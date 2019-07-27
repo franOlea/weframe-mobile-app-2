@@ -1,6 +1,7 @@
 package mobile.weframe.com.weframe_gallery_app.rest
 
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.core.type.TypeReference
+import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.*
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA
@@ -15,10 +16,12 @@ import java.io.File
 import java.nio.charset.Charset
 import java.util.*
 
+import com.fasterxml.jackson.module.kotlin.*
+
 class RestService private constructor() {
 
     companion object {
-        val SERVER_URL = "http://weframe.sa-east-1.elasticbeanstalk.com"
+        val SERVER_URL = "http://kotlin-resources-server.sa-east-1.elasticbeanstalk.com"
         val instance = RestService()
     }
 
@@ -39,7 +42,7 @@ class RestService private constructor() {
         this.authHeader =  "Bearer $authToken"
     }
 
-    fun <T> request(url: String, method: HttpMethod, entity: HttpEntity<out Any>, responseClass: Class<T>) : ResponseEntity<T> {
+    fun request(url: String, method: HttpMethod, entity: HttpEntity<out Any>) : ResponseEntity<JsonNode> {
         if(authHeader == null) {
             throw NotLoggedInException()
         }
@@ -48,10 +51,10 @@ class RestService private constructor() {
         headers["Authorization"] = listOf(authHeader)
         val requestEntity = HttpEntity(entity.body, headers)
         try {
-            return this.restTemplate.exchange("$SERVER_URL$url", method, requestEntity, responseClass)
+            return this.restTemplate.exchange("$SERVER_URL$url", method, requestEntity, JsonNode::class.java)
         } catch(e: HttpClientErrorException) {
             this.authHeader = null
-            throw NotLoggedInException()
+            throw NotLoggedInException(e)
         }
     }
 
@@ -67,14 +70,15 @@ class UserPictureService {
         val headers = HttpHeaders()
         headers.contentType = MULTIPART_FORM_DATA
         val imageEntity = HttpEntity<MultiValueMap<String, Any>>(map, headers)
-        val picture = RestService.instance
-            .request("/pictures", HttpMethod.POST, imageEntity, Picture::class.java)
-        if(picture.statusCode == HttpStatus.OK || picture.statusCode == HttpStatus.CREATED) {
-            val userImageEntity = HttpEntity<Picture>(picture.body)
-            return RestService.instance
-                .request("/user-pictures", HttpMethod.POST, userImageEntity, UserPicture::class.java)
+        val pictureResponse = RestService.instance.request("/pictures", HttpMethod.POST, imageEntity)
+        if(pictureResponse.statusCode == HttpStatus.OK || pictureResponse.statusCode == HttpStatus.CREATED) {
+            val picture = jacksonObjectMapper().convertValue<Picture>(pictureResponse.body, object : TypeReference<Picture>(){})
+            val userImageEntity = HttpEntity<Picture>(picture)
+            val userPictureResponse = RestService.instance.request("/user-pictures", HttpMethod.POST, userImageEntity)
+            val userPicture = jacksonObjectMapper().convertValue<UserPicture>(userPictureResponse.body, object : TypeReference<UserPicture>(){})
+            return ResponseEntity(userPicture, userPictureResponse.statusCode)
         } else {
-            throw UploadFailException("An unexpected error occurred while trying to upload the user picture. Status:${picture.statusCode}")
+            throw UploadFailException("An unexpected error occurred while trying to upload the user picture. Status:${pictureResponse.statusCode}")
         }
     }
 
@@ -83,10 +87,19 @@ class UserPictureService {
         headers.add("page", page.toString())
         headers.add("size", size.toString())
         val entity = HttpEntity<Any>(null, headers)
-        return RestService.instance
-            .request("/user-pictures?page=$page&size=$size", HttpMethod.GET, entity, UserPicturePagedResponse::class.java)
+        val response = RestService.instance.request("/user-pictures?page=$page&size=$size", HttpMethod.GET, entity)
+        val page = jacksonObjectMapper().convertValue<Page>(response.body.get("page"), object : TypeReference<Page>() {})
+        return if(response.body.has("_embedded")) {
+            val userPictures = jacksonObjectMapper().convertValue<List<UserPicture>>(response.body.get("_embedded").get("userPictures"), object : TypeReference<List<UserPicture>>() {})
+            ResponseEntity(UserPicturePagedResponse(page, userPictures), response.statusCode)
+        } else {
+            ResponseEntity(UserPicturePagedResponse(page, emptyList()), response.statusCode)
+        }
     }
 }
 
 class UploadFailException(message: String?) : Exception(message)
-class NotLoggedInException : Exception()
+class NotLoggedInException : Exception {
+    constructor()
+    constructor(cause: Throwable?) : super(cause)
+}

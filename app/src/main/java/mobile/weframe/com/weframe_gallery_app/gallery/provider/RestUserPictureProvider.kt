@@ -1,10 +1,9 @@
 package mobile.weframe.com.weframe_gallery_app.gallery.provider
 
-import mobile.weframe.com.weframe_gallery_app.gallery.UserPicture
 import mobile.weframe.com.weframe_gallery_app.gallery.UserPictureProvider
 import mobile.weframe.com.weframe_gallery_app.rest.UserPictureService
-import android.os.AsyncTask
-
+import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
+import java.io.File
 
 
 class RestUserPictureProvider : UserPictureProvider {
@@ -14,14 +13,10 @@ class RestUserPictureProvider : UserPictureProvider {
     override fun get(page: Long, size: Long): List<UserPicture> {
         return userPictureService.get(page, size).body.userPictures
     }
+
+    override fun upload(file: File) : UserPicture {
+        return userPictureService.upload(file).body
+    }
 }
 
 data class PageRequest(val page: Long = 0, val size: Long = 10)
-
-class DownloadFilesTask(private val provider: UserPictureProvider) : AsyncTask<PageRequest, Int, List<UserPicture>>() {
-
-    override fun doInBackground(vararg request: PageRequest): List<UserPicture>? {
-        return provider.get(request[0].page, request[0].size)
-    }
-
-}
