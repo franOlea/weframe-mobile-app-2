@@ -18,6 +18,10 @@ class RestUserPictureProvider : UserPictureProvider {
     override fun upload(file: File, tracker: FileUploadProgressTracker) : UserPicture {
         return userPictureService.upload(file, tracker).body
     }
+
+    override fun delete(id: Long) {
+        userPictureService.delete(id)
+    }
 }
 
 data class PageRequest(val page: Long = 0, val size: Long = 10)

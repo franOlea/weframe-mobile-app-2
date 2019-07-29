@@ -1,5 +1,6 @@
 package mobile.weframe.com.weframe_gallery_app.gallery
 
+import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.support.v7.widget.RecyclerView
@@ -14,6 +15,8 @@ import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
 
 class UserPictureGalleryAdapter(val context: Context, val userPictures: List<UserPicture>)
     : RecyclerView.Adapter<UserPictureGalleryAdapter.MyViewHolder>() {
+
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MyViewHolder {
         val context = parent.context
@@ -55,7 +58,8 @@ class UserPictureGalleryAdapter(val context: Context, val userPictures: List<Use
                 val intent = Intent(context, UserPictureActivity::class.java).apply {
                     putExtra(UserPictureActivity.EXTRA_USER_PICTURE, userPicture)
                 }
-                context.startActivity(intent)
+                (context as Activity).startActivityForResult(
+                    intent, UserPictureGalleryActivity.USER_PICTURE_REQUEST_CODE)
             }
         }
     }

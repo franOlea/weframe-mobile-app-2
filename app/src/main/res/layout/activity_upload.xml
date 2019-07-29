@@ -7,11 +7,21 @@
         android:layout_height="match_parent"
         tools:context=".gallery.UploadActivity">
 
-    <TextView
-            android:layout_width="163dp"
-            android:layout_height="100dp"
-            android:id="@+id/progress_counter"
+    <ProgressBar
+            android:layout_width="170dp"
+            android:layout_height="170dp"
+            android:id="@+id/progress_bar"
+            style="?android:attr/progressBarStyleLarge"
+            android:progressDrawable="@drawable/circular_progress_bar"
+            android:max="100"
+            android:progress="0"
+            android:indeterminate="false"
+            android:layout_marginTop="8dp"
+            app:layout_constraintTop_toTopOf="parent"
+            android:layout_marginEnd="8dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginStart="8dp"
             app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginStart="68dp" android:layout_marginTop="32dp"
-            app:layout_constraintTop_toTopOf="parent" android:text="test"/>
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 </android.support.constraint.ConstraintLayout>

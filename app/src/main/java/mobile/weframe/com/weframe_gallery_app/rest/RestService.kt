@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import org.springframework.core.io.FileSystemResource
 import org.springframework.http.*
 import org.springframework.http.MediaType.MULTIPART_FORM_DATA
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory
 import org.springframework.http.converter.FormHttpMessageConverter
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter
 import org.springframework.util.LinkedMultiValueMap
@@ -89,7 +88,7 @@ class UserPictureService {
             val userPicture = jacksonObjectMapper().convertValue<UserPicture>(userPictureResponse.body, object : TypeReference<UserPicture>(){})
             return ResponseEntity(userPicture, userPictureResponse.statusCode)
         } else {
-            throw UploadFailException("An unexpected error occurred while trying to upload the user picture. " +
+            throw OperationFailException("An unexpected error occurred while trying to upload the user picture. " +
                     "Status:${pictureResponse.statusCode}")
         }
     }
@@ -109,6 +108,19 @@ class UserPictureService {
             ResponseEntity(UserPicturePagedResponse(responsePage, emptyList()), response.statusCode)
         }
     }
+
+    fun delete(id: Long) {
+        val response = RestService.instance
+            .request("/user-pictures/$id", HttpMethod.DELETE, HttpEntity.EMPTY)
+        if(response.statusCode != HttpStatus.OK) {
+            if(response.statusCode == HttpStatus.UNAUTHORIZED || response.statusCode == HttpStatus.FORBIDDEN) {
+                throw NotLoggedInException()
+            } else {
+                throw OperationFailException("An unexpected error ocurred. Could not delete picture. " +
+                        "Status: ${response.statusCode}")
+            }
+        }
+    }
 }
 
 class NullProgressTracker: FileUploadProgressTracker {
@@ -118,7 +130,7 @@ class NullProgressTracker: FileUploadProgressTracker {
     }
 }
 
-class UploadFailException(message: String?) : Exception(message)
+class OperationFailException(message: String?) : Exception(message)
 class NotLoggedInException : Exception {
     constructor()
     constructor(cause: Throwable?) : super(cause)

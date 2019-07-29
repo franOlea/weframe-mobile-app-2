@@ -14,6 +14,8 @@ import android.support.v7.widget.GridLayoutManager
 import android.support.v7.widget.RecyclerView
 import mobile.weframe.com.weframe_gallery_app.LoginActivity
 import mobile.weframe.com.weframe_gallery_app.R
+import mobile.weframe.com.weframe_gallery_app.gallery.detail.UserPictureActivity.Companion.DELETED_RESULT
+import mobile.weframe.com.weframe_gallery_app.gallery.detail.UserPictureActivity.Companion.USER_PICTURE_EXTRA
 import mobile.weframe.com.weframe_gallery_app.gallery.provider.PageRequest
 import mobile.weframe.com.weframe_gallery_app.gallery.provider.RestUserPictureProvider
 import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
@@ -23,6 +25,8 @@ import java.util.concurrent.Executors
 
 
 class UserPictureGalleryActivity : AppCompatActivity() {
+
+
     @Suppress("PrivatePropertyName")
     private val MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 0
     private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
@@ -31,7 +35,7 @@ class UserPictureGalleryActivity : AppCompatActivity() {
     private lateinit var imageGalleryAdapter: UserPictureGalleryAdapter
     private lateinit var addButton: FloatingActionButton
     private val userPictureProvider = RestUserPictureProvider()
-    private val userPictures: MutableList<UserPicture> = LinkedList()
+    private val userPictures: MutableList<UserPicture> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -143,11 +147,23 @@ class UserPictureGalleryActivity : AppCompatActivity() {
                     intent.putExtra(getString(R.string.upload_file_path), imgDecodableString)
                     startActivity(intent)
                 }
+                USER_PICTURE_REQUEST_CODE -> {
+                    if(resultCode == Activity.RESULT_OK) {
+                        if(data!!.getBooleanExtra(DELETED_RESULT, false)) {
+                            val element = data.getParcelableExtra<UserPicture>(USER_PICTURE_EXTRA)
+                            userPictures.remove(element)
+                            runOnUiThread {
+                                this.imageGalleryAdapter.notifyDataSetChanged()
+                            }
+                        }
+                    }
+                }
             }
     }
 
     companion object {
         private const val GALLERY_REQUEST_CODE: Int = 100
+        const val USER_PICTURE_REQUEST_CODE: Int = 200
     }
 
 }

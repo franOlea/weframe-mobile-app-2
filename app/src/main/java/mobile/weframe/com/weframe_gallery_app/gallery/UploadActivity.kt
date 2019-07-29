@@ -1,10 +1,9 @@
 package mobile.weframe.com.weframe_gallery_app.gallery
 
-import android.annotation.SuppressLint
 import android.content.Intent
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.widget.TextView
+import android.support.v7.app.AppCompatActivity
+import android.widget.ProgressBar
 import mobile.weframe.com.weframe_gallery_app.LoginActivity
 import mobile.weframe.com.weframe_gallery_app.R
 import mobile.weframe.com.weframe_gallery_app.gallery.provider.RestUserPictureProvider
@@ -12,17 +11,16 @@ import mobile.weframe.com.weframe_gallery_app.rest.FileUploadProgressTracker
 import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.math.log
 
 class UploadActivity : AppCompatActivity() {
     private val executorService: ExecutorService = Executors.newSingleThreadExecutor()
     private val userPictureProvider = RestUserPictureProvider()
-    private lateinit var progressCounter: TextView
+    private lateinit var progressBar: ProgressBar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_upload)
-        progressCounter = findViewById(R.id.progress_counter)
+        progressBar = findViewById(R.id.progress_bar)
         val filePath = intent.getSerializableExtra(getString(R.string.upload_file_path)) as String
         postPicture(File(filePath))
     }
@@ -48,10 +46,11 @@ class UploadActivity : AppCompatActivity() {
 
     private val progressTracker = object : FileUploadProgressTracker {
 
-        @SuppressLint("SetTextI18n")
         override fun trackProgress(progress: Long) {
-            runOnUiThread {
-                progressCounter.text = "Progress: $progress"
+            if(progress in 1..99) {
+                runOnUiThread {
+                    progressBar.progress = progress.toInt()
+                }
             }
         }
     }
