@@ -4,9 +4,9 @@ import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
-import android.support.design.widget.FloatingActionButton
-import android.support.v7.app.AppCompatActivity
-import android.support.v7.graphics.Palette
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import androidx.appcompat.app.AppCompatActivity
+import androidx.palette.graphics.Palette
 import android.view.ViewGroup
 import android.widget.ImageView
 import com.squareup.picasso.Callback
@@ -19,7 +19,7 @@ import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import android.app.Activity
-
+import com.github.chrisbanes.photoview.PhotoView
 
 
 class UserPictureActivity : AppCompatActivity() {
@@ -32,7 +32,7 @@ class UserPictureActivity : AppCompatActivity() {
         const val USER_PICTURE_EXTRA = "userPicture"
     }
 
-    private lateinit var imageView: ImageView
+    private lateinit var imageView: PhotoView
     private lateinit var userPicture: UserPicture
     private lateinit var deleteButton: FloatingActionButton
 
@@ -60,7 +60,7 @@ class UserPictureActivity : AppCompatActivity() {
 
                 override fun onSuccess() {
                     val bitmap = (imageView.drawable as BitmapDrawable).bitmap
-                    onPalette(Palette.from(bitmap).generate())
+                    onPalette(androidx.palette.graphics.Palette.from(bitmap).generate())
                 }
 
                 override fun onError(e: Exception?) {
@@ -100,7 +100,7 @@ class UserPictureActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    fun onPalette(palette: Palette?) {
+    fun onPalette(palette: androidx.palette.graphics.Palette?) {
         if (null != palette) {
             val parent = imageView.parent.parent as ViewGroup
             parent.setBackgroundColor(palette.getDarkVibrantColor(Color.GRAY))

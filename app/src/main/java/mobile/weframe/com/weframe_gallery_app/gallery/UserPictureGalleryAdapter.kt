@@ -3,7 +3,7 @@ package mobile.weframe.com.weframe_gallery_app.gallery
 import android.app.Activity
 import android.content.Context
 import android.content.Intent
-import android.support.v7.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -14,7 +14,7 @@ import mobile.weframe.com.weframe_gallery_app.gallery.detail.UserPictureActivity
 import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
 
 class UserPictureGalleryAdapter(val context: Context, val userPictures: List<UserPicture>)
-    : RecyclerView.Adapter<UserPictureGalleryAdapter.MyViewHolder>() {
+    : androidx.recyclerview.widget.RecyclerView.Adapter<UserPictureGalleryAdapter.MyViewHolder>() {
 
 
 
@@ -43,7 +43,7 @@ class UserPictureGalleryAdapter(val context: Context, val userPictures: List<Use
         return userPictures.size
     }
 
-    inner class MyViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView), View.OnClickListener {
+    inner class MyViewHolder(itemView: View) : androidx.recyclerview.widget.RecyclerView.ViewHolder(itemView), View.OnClickListener {
 
         var photoImageView: ImageView = itemView.findViewById(R.id.iv_photo)
 
@@ -53,7 +53,7 @@ class UserPictureGalleryAdapter(val context: Context, val userPictures: List<Use
 
         override fun onClick(view: View) {
             val position = adapterPosition
-            if (position != RecyclerView.NO_POSITION) {
+            if (position != androidx.recyclerview.widget.RecyclerView.NO_POSITION) {
                 val userPicture = userPictures[position]
                 val intent = Intent(context, UserPictureActivity::class.java).apply {
                     putExtra(UserPictureActivity.EXTRA_USER_PICTURE, userPicture)
