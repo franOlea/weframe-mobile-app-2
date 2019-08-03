@@ -1,15 +1,17 @@
 package mobile.weframe.com.weframe_gallery_app.gallery.detail
 
+import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.BitmapDrawable
 import android.os.Bundle
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import android.view.View
+import android.view.ViewGroup
+import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.palette.graphics.Palette
-import android.view.ViewGroup
-import android.widget.ImageView
-import com.squareup.picasso.Callback
+import com.github.chrisbanes.photoview.PhotoView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.squareup.picasso.Picasso
 import mobile.weframe.com.weframe_gallery_app.R
 import mobile.weframe.com.weframe_gallery_app.gallery.UserPictureGalleryActivity
@@ -18,8 +20,11 @@ import mobile.weframe.com.weframe_gallery_app.rest.NotLoggedInException
 import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import android.app.Activity
-import com.github.chrisbanes.photoview.PhotoView
+import android.graphics.Bitmap
+import android.graphics.drawable.Drawable
+import com.squareup.picasso.Target
+
+
 
 
 class UserPictureActivity : AppCompatActivity() {
@@ -35,6 +40,7 @@ class UserPictureActivity : AppCompatActivity() {
     private lateinit var imageView: PhotoView
     private lateinit var userPicture: UserPicture
     private lateinit var deleteButton: FloatingActionButton
+    private lateinit var progressBar: ProgressBar
 
     private val userPictureProvider = RestUserPictureProvider()
 
@@ -44,6 +50,7 @@ class UserPictureActivity : AppCompatActivity() {
         userPicture = intent.getParcelableExtra(EXTRA_USER_PICTURE)
         imageView = findViewById(R.id.image)
         deleteButton = findViewById(R.id.delete_image_button)
+        progressBar = findViewById(R.id.progress_bar)
     }
 
     override fun onStart() {
@@ -53,19 +60,7 @@ class UserPictureActivity : AppCompatActivity() {
             .load(userPicture.picture.url)
             .placeholder(R.drawable.loading_animation)
             .error(R.drawable.error)
-            .fit()
-//            .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
-//            .networkPolicy(NetworkPolicy.NO_CACHE)
-            .into(imageView, object : Callback {
-
-                override fun onSuccess() {
-                    val bitmap = (imageView.drawable as BitmapDrawable).bitmap
-                    onPalette(androidx.palette.graphics.Palette.from(bitmap).generate())
-                }
-
-                override fun onError(e: Exception?) {
-                }
-            })
+            .into(target)
 
         deleteButton.setOnClickListener {
             executorService.submit {deleteUserPicture() }
@@ -100,10 +95,28 @@ class UserPictureActivity : AppCompatActivity() {
         startActivity(intent)
     }
 
-    fun onPalette(palette: androidx.palette.graphics.Palette?) {
+    fun onPalette(palette: Palette?) {
         if (null != palette) {
             val parent = imageView.parent.parent as ViewGroup
             parent.setBackgroundColor(palette.getDarkVibrantColor(Color.GRAY))
+        }
+    }
+
+    private val target = object : Target {
+
+        override fun onBitmapLoaded(bitmap: Bitmap, from: Picasso.LoadedFrom) {
+            progressBar.visibility = View.GONE
+            imageView.setImageBitmap(bitmap)
+            val imageBitmap = (imageView.drawable as BitmapDrawable).bitmap
+            onPalette(Palette.from(imageBitmap).generate())
+        }
+
+        override fun onPrepareLoad(placeHolderDrawable: Drawable?) {
+
+        }
+
+        override fun onBitmapFailed(e: java.lang.Exception?, errorDrawable: Drawable?) {
+
         }
     }
 }

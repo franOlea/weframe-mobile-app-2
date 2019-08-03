@@ -41,7 +41,7 @@ class UserPictureGalleryActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_picture_gallery)
 
-        val layoutManager = androidx.recyclerview.widget.GridLayoutManager(this, 2)
+        val layoutManager = GridLayoutManager(this, 2)
         recyclerView = findViewById(R.id.rv_images)
         recyclerView.setHasFixedSize(true)
         recyclerView.layoutManager = layoutManager
