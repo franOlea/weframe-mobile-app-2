@@ -33,9 +33,8 @@ class UserPictureGalleryAdapter(val context: Context, val userPictures: List<Use
             .load(userPicture.picture.url)
             .placeholder(R.drawable.loading_animation)
             .error(R.drawable.error)
-            .fit().centerCrop()
-//            .memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE)
-//            .networkPolicy(NetworkPolicy.NO_CACHE)
+            .fit()
+            .centerCrop()
             .into(imageView)
     }
 

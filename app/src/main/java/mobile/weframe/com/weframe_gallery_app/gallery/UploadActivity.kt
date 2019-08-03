@@ -5,10 +5,10 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Matrix
 import android.os.Bundle
+import android.util.Log
 import android.widget.ProgressBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.exifinterface.media.ExifInterface
-import mobile.weframe.com.weframe_gallery_app.LoginActivity
 import mobile.weframe.com.weframe_gallery_app.R
 import mobile.weframe.com.weframe_gallery_app.gallery.provider.RestUserPictureProvider
 import mobile.weframe.com.weframe_gallery_app.rest.FileUploadProgressTracker
@@ -45,6 +45,8 @@ class UploadActivity : AppCompatActivity() {
         override fun trackProgress(progress: Long) {
             if(progress in 1..99) {
                 runOnUiThread {
+                    progressBar.max = 0
+                    progressBar.max = 100
                     progressBar.progress = progress.toInt()
                 }
             }
@@ -58,7 +60,8 @@ class UploadActivity : AppCompatActivity() {
                 userPictureProvider.upload(rotatedFile, progressTracker)
                 startActivity(UserPictureGalleryActivity::class.java)
             } catch(e : Exception) {
-                startActivity(LoginActivity::class.java)
+                Log.e("Unexpected error.", e.stackTrace.toString())
+//                startActivity(LoginActivity::class.java)
             }
         }
     }
@@ -77,8 +80,8 @@ class UploadActivity : AppCompatActivity() {
             }
         }
         val resultingBitmap = Bitmap.createBitmap(originalBitmap, 0, 0, originalBitmap.width, originalBitmap.height, matrix, true)
-        originalBitmap.recycle()
         val resultingFile = saveBitmapToTempFile(resultingBitmap)
+        originalBitmap.recycle()
         resultingBitmap.recycle()
         return resultingFile
     }
