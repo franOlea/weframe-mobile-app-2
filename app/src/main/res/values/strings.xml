@@ -28,5 +28,6 @@
 
     <string name="upload_file_path">FilePath</string>
     <string name="sign_out">Salir</string>
+    <string name="refresh">Recargar</string>
     <string name="spashscreen">Spashscreen</string>
 </resources>

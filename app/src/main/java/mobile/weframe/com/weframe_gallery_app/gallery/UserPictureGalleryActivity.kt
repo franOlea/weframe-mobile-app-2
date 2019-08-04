@@ -5,18 +5,19 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
 import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.widget.ProgressBar
+import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
+import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.yalantis.ucrop.UCrop
 import mobile.weframe.com.weframe_gallery_app.LoginActivity
 import mobile.weframe.com.weframe_gallery_app.R
 import mobile.weframe.com.weframe_gallery_app.gallery.detail.UserPictureActivity.Companion.DELETED_RESULT
@@ -25,6 +26,7 @@ import mobile.weframe.com.weframe_gallery_app.gallery.provider.PageRequest
 import mobile.weframe.com.weframe_gallery_app.gallery.provider.RestUserPictureProvider
 import mobile.weframe.com.weframe_gallery_app.rest.RestService
 import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
+import java.io.File
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
@@ -141,25 +143,29 @@ class UserPictureGalleryActivity : AppCompatActivity() {
         if (resultCode == Activity.RESULT_OK)
             when (requestCode) {
                 GALLERY_REQUEST_CODE -> {
-                    //data.getData return the content URI for the selected Image
                     val selectedImage = data!!.data
                     val filePathColumn = arrayOf(MediaStore.Images.Media.DATA)
-                    // Get the cursor
                     val cursor = contentResolver.query(selectedImage!!, filePathColumn, null, null, null)
-                    // Move to first row
                     cursor!!.moveToFirst()
-                    //Get the column index of MediaStore.Images.Media.DATA
                     val columnIndex = cursor.getColumnIndex(filePathColumn[0])
-                    //Gets the String value in the column
                     val imgDecodableString = cursor.getString(columnIndex)
                     cursor.close()
-                    // Set the Image in ImageView after decoding the String
-                    //imageView.setImageBitmap(BitmapFactory.decodeFile(imgDecodableString))
+                    val options = UCrop.Options()
+                    options.setCompressionQuality(100)
+                    options.setToolbarTitle("Editar Foto")
+                    UCrop.of(
+                            Uri.fromFile(File(imgDecodableString)),
+                            Uri.fromFile(File(this.cacheDir, "editTmp")))
+                        .withOptions(options)
+                        .start(this)
+                }
+                UCrop.REQUEST_CROP -> {
+                    val resultUri = UCrop.getOutput(data!!) as Uri
                     val intent = Intent(applicationContext, UploadActivity::class.java)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-                    intent.putExtra(getString(R.string.upload_file_path), imgDecodableString)
+                    intent.putExtra(getString(R.string.upload_file_path), resultUri.path)
                     startActivity(intent)
                 }
                 USER_PICTURE_REQUEST_CODE -> {
@@ -188,6 +194,12 @@ class UserPictureGalleryActivity : AppCompatActivity() {
                 apply()
             }
             goToLoginActivity()
+            true
+        } else if(item.itemId == R.id.action_refresh) {
+            userPictures.clear()
+            imageGalleryAdapter.notifyDataSetChanged()
+            progressBar.visibility = View.VISIBLE
+            getUserPictures()
             true
         } else {
             false

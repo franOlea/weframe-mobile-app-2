@@ -3,6 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="mobile.weframe.com.weframe_gallery_app.gallery.UserPictureGalleryActivity">
     <item
+            android:id="@+id/action_refresh"
+            android:orderInCategory="100"
+            android:title="@string/refresh"
+            app:showAsAction="never" />
+    <item
         android:id="@+id/action_sign_out"
         android:orderInCategory="100"
         android:title="@string/sign_out"

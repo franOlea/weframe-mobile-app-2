@@ -41,6 +41,7 @@ android {
 }
 
 dependencies {
+    implementation 'com.github.yalantis:ucrop:2.2.3-native'
     implementation 'androidx.recyclerview:recyclerview:1.1.0-beta01'
     implementation 'com.github.chrisbanes:PhotoView:2.3.0'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.6.5'
