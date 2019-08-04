@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Handler
 import android.view.View
+import android.widget.ImageView
 import kotlinx.android.synthetic.main.activity_splashscreen.*
 import mobile.weframe.com.weframe_gallery_app.gallery.UserPictureGalleryActivity
 import mobile.weframe.com.weframe_gallery_app.rest.RestService
@@ -64,16 +65,21 @@ class Splashscreen : AppCompatActivity() {
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
-        dummy_button.setOnTouchListener(mDelayHideTouchListener)
+        val imageView = findViewById<ImageView>(R.id.fullscreen_content)
+        imageView.setImageResource(R.drawable.icon)
 
         val sharedPref = this.getSharedPreferences(
             getString(R.string.credentials_shared_preferences), Context.MODE_PRIVATE)
         val tokenExpirationTimestamp = sharedPref.getLong(getString(R.string.auth_token_expiration_at), 0L)
         val authToken = sharedPref.getString(getString(R.string.auth_token), null)
         if(tokenExpirationTimestamp > Date().time && authToken != null) {
-            RestService.instance.processLogin(authToken)
-            val intent = createIntent(UserPictureGalleryActivity::class.java)
-            startActivity(intent)
+            Timer().schedule(object : TimerTask() {
+                override fun run() {
+                    RestService.instance.processLogin(authToken)
+                    val intent = createIntent(UserPictureGalleryActivity::class.java)
+                    startActivity(intent)
+                }
+            }, 3000)
         } else {
             Timer().schedule(object : TimerTask() {
                 override fun run() {

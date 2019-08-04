@@ -4,10 +4,36 @@
                 android:id="@+id/user_picture_gallery"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
+
+    <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:minHeight="?attr/actionBarSize"
+            android:background="@color/colorPrimary"
+            app:theme="@style/ToolBarStyle"/>
+
     <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rv_images"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:layout_below="@+id/toolbar"/>
+
+    <ProgressBar
+            android:id="@+id/progress_bar"
+            android:layout_below="@+id/toolbar"
+            android:adjustViewBounds="true"
+            android:layout_height="match_parent"
+            android:layout_width="match_parent"
+            android:scaleType="centerCrop"
+            android:layout_margin="0dp"
+            android:background="@color/white"
+            android:indeterminate="true"
+            style="@style/MyProgressBarRectangle"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"/>
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
             android:id="@+id/add_image_button"

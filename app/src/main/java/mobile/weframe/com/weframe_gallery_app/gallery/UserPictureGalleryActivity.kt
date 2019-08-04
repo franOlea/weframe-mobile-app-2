@@ -2,27 +2,31 @@ package mobile.weframe.com.weframe_gallery_app.gallery
 
 import android.Manifest
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.provider.MediaStore
+import android.view.Menu
+import android.view.MenuItem
+import android.view.View
+import android.widget.ProgressBar
+import androidx.appcompat.widget.Toolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import mobile.weframe.com.weframe_gallery_app.LoginActivity
 import mobile.weframe.com.weframe_gallery_app.R
 import mobile.weframe.com.weframe_gallery_app.gallery.detail.UserPictureActivity.Companion.DELETED_RESULT
 import mobile.weframe.com.weframe_gallery_app.gallery.detail.UserPictureActivity.Companion.USER_PICTURE_EXTRA
 import mobile.weframe.com.weframe_gallery_app.gallery.provider.PageRequest
 import mobile.weframe.com.weframe_gallery_app.gallery.provider.RestUserPictureProvider
+import mobile.weframe.com.weframe_gallery_app.rest.RestService
 import mobile.weframe.com.weframe_gallery_app.rest.UserPicture
-import java.util.*
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-
 
 class UserPictureGalleryActivity : AppCompatActivity() {
 
@@ -34,12 +38,19 @@ class UserPictureGalleryActivity : AppCompatActivity() {
     private lateinit var recyclerView: androidx.recyclerview.widget.RecyclerView
     private lateinit var imageGalleryAdapter: UserPictureGalleryAdapter
     private lateinit var addButton: FloatingActionButton
+    private lateinit var toolbar: Toolbar
+    private lateinit var progressBar: ProgressBar
     private val userPictureProvider = RestUserPictureProvider()
     private val userPictures: MutableList<UserPicture> = mutableListOf()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_picture_gallery)
+        progressBar = findViewById(R.id.progress_bar)
+        toolbar = findViewById(R.id.toolbar)
+        toolbar.setTitle(R.string.app_name)
+        toolbar.inflateMenu(R.menu.menu_user_picture_gallery)
+        toolbar.setOnMenuItemClickListener(menuListener)
 
         val layoutManager = GridLayoutManager(this, 2)
         recyclerView = findViewById(R.id.rv_images)
@@ -51,20 +62,24 @@ class UserPictureGalleryActivity : AppCompatActivity() {
         getUserPictures()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.menu_user_picture_gallery, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
     private fun getUserPictures(pageRequest: PageRequest = PageRequest()) {
         executorService.submit {
             try {
                 val retrievedPictures = userPictureProvider.get(pageRequest.page, pageRequest.size)
                 this.userPictures.removeAll { true }
                 this.userPictures.addAll(retrievedPictures)
-                runOnUiThread {this.imageGalleryAdapter.notifyDataSetChanged()}
+                runOnUiThread {
+                    progressBar.visibility = View.GONE
+                    this.imageGalleryAdapter.notifyDataSetChanged()
+                }
 
             } catch(e : Exception) {
-                val intent = Intent(applicationContext, LoginActivity::class.java)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
-                intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
-                startActivity(intent)
+                goToLoginActivity()
             }
         }
     }
@@ -159,6 +174,32 @@ class UserPictureGalleryActivity : AppCompatActivity() {
                     }
                 }
             }
+    }
+
+    private val menuListener = Toolbar.OnMenuItemClickListener { item ->
+        if (item.itemId == R.id.action_sign_out) {
+            val sharedPref = this.getSharedPreferences(
+                getString(R.string.credentials_shared_preferences), Context.MODE_PRIVATE)
+            with(sharedPref.edit()) {
+                remove(getString(R.string.auth_token))
+                remove(getString(R.string.auth_refresh_token))
+                remove(getString(R.string.auth_token_expiration_at))
+                RestService.instance.logout()
+                apply()
+            }
+            goToLoginActivity()
+            true
+        } else {
+            false
+        }
+    }
+
+    private fun goToLoginActivity() {
+        val intent = Intent(applicationContext, LoginActivity::class.java)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK)
+        intent.addFlags(Intent.FLAG_ACTIVITY_NO_ANIMATION)
+        startActivity(intent)
     }
 
     companion object {

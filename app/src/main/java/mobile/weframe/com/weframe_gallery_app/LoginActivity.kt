@@ -5,6 +5,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.view.View
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import android.widget.Toast
 import com.auth0.android.Auth0
@@ -19,17 +21,19 @@ import mobile.weframe.com.weframe_gallery_app.rest.RestService
 
 class LoginActivity : AppCompatActivity() {
 
+    private lateinit var button: Button
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-
+        button = findViewById(R.id.login_button)
         val auth0 = createAuth0()
-
-
         val sharedPref = this.getSharedPreferences(
             getString(R.string.credentials_shared_preferences), Context.MODE_PRIVATE)
         button.setOnClickListener {
-
+            runOnUiThread {
+                button.visibility = View.GONE
+            }
             WebAuthProvider.init(auth0)
                 .withScheme("demo")
                 .withAudience("http://localhost:8080")
@@ -41,7 +45,10 @@ class LoginActivity : AppCompatActivity() {
     private fun authCallback(sharedPref : SharedPreferences): AuthCallback {
         return object : AuthCallback {
             override fun onFailure(dialog: Dialog) {
-                runOnUiThread { dialog.show() }
+                runOnUiThread {
+                    dialog.show()
+                    button.visibility = View.VISIBLE
+                }
             }
 
             override fun onFailure(exception: AuthenticationException) {
@@ -51,6 +58,7 @@ class LoginActivity : AppCompatActivity() {
                         "Error: " + exception.message,
                         Toast.LENGTH_SHORT
                     ).show()
+                    button.visibility = View.VISIBLE
                 }
             }
 

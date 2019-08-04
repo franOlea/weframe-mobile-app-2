@@ -1,11 +1,12 @@
 <resources>
-    <string name="app_name">weframe-gallery-app</string>
+    <string name="app_name">WeFrame - Galeria</string>
     <string name="action_settings">Settings</string>
 
     <string name="title_activity_splashscreen">Splashscreen</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
-    <string name="title_activity_login">LoginActivity</string>
+    <string name="title_activity_login">WeFrame - Ingresar</string>
+    <string name="title_activity_gallery">WeFrame - Galeria</string>
 
     <string name="credentials_shared_preferences">
         mobile.weframe.com.weframe_gallery_app.credentials_shared_preferences
@@ -26,4 +27,6 @@
     <string name="title_activity_main">MainActivity</string>
 
     <string name="upload_file_path">FilePath</string>
+    <string name="sign_out">Salir</string>
+    <string name="spashscreen">Spashscreen</string>
 </resources>

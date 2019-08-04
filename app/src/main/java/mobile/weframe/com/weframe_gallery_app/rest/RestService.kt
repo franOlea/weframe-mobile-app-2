@@ -47,6 +47,10 @@ class RestService private constructor() {
         this.authHeader =  "Bearer $authToken"
     }
 
+    fun logout() {
+        this.authHeader = ""
+    }
+
     fun request(url: String, method: HttpMethod,
                 entity: HttpEntity<out Any>,
                 tracker: FileUploadProgressTracker = NullProgressTracker()) : ResponseEntity<JsonNode> {
