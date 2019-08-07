@@ -139,6 +139,7 @@ class UserPictureGalleryActivity : AppCompatActivity() {
     }
 
     public override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
         // Result code is RESULT_OK only if the user selects an Image
         if (resultCode == Activity.RESULT_OK)
             when (requestCode) {
@@ -183,26 +184,30 @@ class UserPictureGalleryActivity : AppCompatActivity() {
     }
 
     private val menuListener = Toolbar.OnMenuItemClickListener { item ->
-        if (item.itemId == R.id.action_sign_out) {
-            val sharedPref = this.getSharedPreferences(
-                getString(R.string.credentials_shared_preferences), Context.MODE_PRIVATE)
-            with(sharedPref.edit()) {
-                remove(getString(R.string.auth_token))
-                remove(getString(R.string.auth_refresh_token))
-                remove(getString(R.string.auth_token_expiration_at))
-                RestService.instance.logout()
-                apply()
+        when {
+            item.itemId == R.id.action_sign_out -> {
+                val sharedPref = this.getSharedPreferences(
+                    getString(R.string.credentials_shared_preferences), Context.MODE_PRIVATE)
+                with(sharedPref.edit()) {
+                    remove(getString(R.string.auth_token))
+                    remove(getString(R.string.auth_refresh_token))
+                    remove(getString(R.string.auth_token_expiration_at))
+                    RestService.instance.logout()
+                    apply()
+                }
+                goToLoginActivity()
+                true
             }
-            goToLoginActivity()
-            true
-        } else if(item.itemId == R.id.action_refresh) {
-            userPictures.clear()
-            imageGalleryAdapter.notifyDataSetChanged()
-            progressBar.visibility = View.VISIBLE
-            getUserPictures()
-            true
-        } else {
-            false
+            item.itemId == R.id.action_refresh -> {
+                userPictures.clear()
+                runOnUiThread {
+                    imageGalleryAdapter.notifyDataSetChanged()
+                    progressBar.visibility = View.VISIBLE
+                }
+                getUserPictures()
+                true
+            }
+            else -> false
         }
     }
 
